@@ -1,0 +1,21 @@
+{
+  "name": "menus-api",
+  "version": "1.0.0",
+  "main": "handler.ts",
+  "repository": "https://github.com/Gdiasll/menus-api.git",
+  "author": "Gdiasll",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.85",
+    "@types/mongoose": "^5.11.97",
+    "serverless-offline": "^8.3.1",
+    "serverless-plugin-typescript": "^2.1.0",
+    "ts-node": "^10.4.0",
+    "tslint": "^6.1.3",
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mongoose": "^6.0.14"
+  }
+}
