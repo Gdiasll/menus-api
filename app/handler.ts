@@ -3,14 +3,16 @@ import dotenv from 'dotenv';
 const dotenvPath = '../.env';
 dotenv.config({ path: dotenvPath });
 
+import { menu } from './model';
+import { MenuController } from './controller/menu';
+const menuController = new MenuController(menu);
+
 export const createMenu: Handler = (event: any, context: Context) => {
-  return new Promise(() => 'TODO CREATE');
+  return menuController.create(event, context);
 };
 
 export const deleteMenu: Handler = (event: any) => {
-  return new Promise(() => 'TODO DELETE');
+  return menuController.delete(event);
 };
 
-export const getAllMenu: Handler = () => {
-  return new Promise(() => ({ message: 'TODO FIND' }))
-}
+export const getAllMenu: Handler = () => menuController.getAll();
