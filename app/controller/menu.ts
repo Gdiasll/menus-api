@@ -10,11 +10,17 @@ export class MenuController extends MenuService {
         super(menu);
     }
 
-    async create(event: any, context?: Context) {
+    async create(event: any) {
         const params: CreateMenuDTO = JSON.parse(event.body);
 
         try {
-            return 'TODO CREATE BR';
+            if (params.relatedId) {
+                const idExists = await this.findById(params.relatedId);
+                if (!idExists) return MessageUtil.error(403, 'parentId not exist');
+            }
+
+            const newMenu: any = await this.createMenu({ name: params.name, relatedId: params.relatedId });
+            return MessageUtil.created({ id: newMenu.id });
         } catch (error) {
             console.error(error);
             return MessageUtil.error(error.code, error.message)
@@ -22,10 +28,13 @@ export class MenuController extends MenuService {
     }
 
     async delete(event: any) {
-        const params: CreateMenuDTO = JSON.parse(event.body);
+        const id: number = event.pathParameters.id;
 
         try {
-            return 'TODO CREATE SERVICE BR';
+            const idExists = await this.findById(id);
+            if (!idExists) return MessageUtil.error(404, 'id not found');
+            const deletedMenu = await this.deleteMenu(id);
+            return MessageUtil.success(deletedMenu);
         } catch (error) {
             console.error(error);
             return MessageUtil.error(error.code, error.message)
@@ -34,7 +43,8 @@ export class MenuController extends MenuService {
 
     async getAll() {
         try {
-            return 'TODO CREATE SERVICE BR';
+            const data = await this.getAllMenu();
+            return MessageUtil.success(data);
         } catch (error) {
             console.error(error);
             return MessageUtil.error(error.code, error.message)

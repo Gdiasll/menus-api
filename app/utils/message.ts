@@ -2,6 +2,7 @@ import { ResponseVO } from '../model/vo/responseVO';
 
 enum StatusCode {
   success = 200,
+  created = 201,
 }
 
 class Result {
@@ -31,14 +32,17 @@ class Result {
 
 export class MessageUtil {
   static success(data: object): ResponseVO {
-    const result = new Result(StatusCode.success, 0, 'success', data);
-
+    const result = new Result(StatusCode.success, 200, 'success', data);
     return result.bodyToString();
   }
 
-  static error(code: number = 1000, message: string) {
-    const result = new Result(StatusCode.success, code, message);
+  static created(data: object): ResponseVO {
+    const result = new Result(StatusCode.created, 201, 'created', data);
+    return result.bodyToString();
+  }
 
+  static error(code: number = 500, message: string) {
+    const result = new Result(StatusCode.success, code, message);
     console.log(result.bodyToString());
     return result.bodyToString();
   }

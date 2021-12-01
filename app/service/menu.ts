@@ -8,9 +8,11 @@ export class MenuService {
         this.menu = menu;
     }
 
-    protected async createMenu(params: CreateMenuDTO): Promise<object> {
+    protected async createMenu({ name, relatedId = 0 }: CreateMenuDTO): Promise<object> {
         try {
-            return { message: 'TODO' }
+            const newMenu = await this.menu.create({ name });
+            if(relatedId) await this.menu.updateOne({ id: relatedId }, { $push: { submenus: newMenu._id } });
+            return newMenu;
         } catch (error) {
             console.error(error);
             throw error;
@@ -19,7 +21,16 @@ export class MenuService {
 
     protected async deleteMenu(id: number): Promise<object> {
         try {
-            return { message: 'TODO' }
+            return this.menu.deleteOne({ id });
+        } catch (error) {
+            console.error(error);
+            throw error;
+        }
+    }
+
+    protected async findById(id: number): Promise<object> {
+        try {
+            return this.menu.findOne({ id })
         } catch (error) {
             console.error(error);
             throw error;
@@ -28,7 +39,7 @@ export class MenuService {
 
     protected async getAllMenu(): Promise<object> {
         try {
-            return { message: 'TODO' }
+            return await this.menu.find();
         } catch (error) {
             console.error(error);
             throw error;
