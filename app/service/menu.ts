@@ -11,7 +11,7 @@ export class MenuService {
     protected async createMenu({
         name,
         parentId = null,
-        parentPath = '',
+        parentPath = null,
     }: {
         name: string,
         parentId?: string,
@@ -21,7 +21,7 @@ export class MenuService {
         const pathSeparator = (parentPath && parentPath.length) ? '#' : '';
         const payload = {
             name: name,
-            path: parentId ? parentPath + pathSeparator + parentId : null,
+            path: parentId ? parentPath || '' + pathSeparator + parentId : null,
         };
         const newMenu: MenuDocument = await this.menu.create(payload);
 
