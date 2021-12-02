@@ -1,48 +1,51 @@
 import { Model } from 'mongoose';
-import { CreateMenuDTO } from '../model/dto/createMenuDTO';
+import { MenuDocument } from '../model';
 
 export class MenuService {
     private menu: Model<any>;
-    
+
     constructor(menu: Model<any>) {
         this.menu = menu;
     }
 
-    protected async createMenu({ name, relatedId = 0 }: CreateMenuDTO): Promise<object> {
-        try {
-            const newMenu = await this.menu.create({ name });
-            if(relatedId) await this.menu.updateOne({ id: relatedId }, { $push: { submenus: newMenu._id } });
-            return newMenu;
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+    protected async createMenu({
+        name,
+        parentId = null,
+        parentPath = '',
+    }: {
+        name: string,
+        parentId?: string,
+        parentPath?: string,
+    }): Promise<object> {
+
+        const pathSeparator = (parentPath && parentPath.length) ? '#' : '';
+        const payload = {
+            name: name,
+            path: parentId ? parentPath + pathSeparator + parentId : null,
+        };
+        const newMenu: MenuDocument = await this.menu.create(payload);
+
+        if (parentId)
+            await this.menu.updateOne({ _id: parentId }, { $push: { submenus: newMenu } });
+        return newMenu;
     }
 
-    protected async deleteMenu(id: number): Promise<object> {
-        try {
-            return this.menu.deleteOne({ id });
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+    protected async deleteMenu(_id: string): Promise<object> {
+        const childMenus: string[] = await this.fetchChilds(_id);
+        await this.menu.updateMany({}, { $pull: { submenus: _id } });
+        return this.menu.deleteMany({ _id: { $in: [_id, ...childMenus] } });
     }
 
-    protected async findById(id: number): Promise<object> {
-        try {
-            return this.menu.findOne({ id })
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+    protected async findById(id: number): Promise<MenuDocument> {
+        return this.menu.findOne({ id });
+    }
+
+    private async fetchChilds(_Id: string): Promise<string[]> {
+        const childs: MenuDocument[] = await this.menu.find({ path: { $regex: '.*' + _Id + '.*' } });
+        return childs.map((menu: MenuDocument) => menu._id);
     }
 
     protected async getAllMenu(): Promise<object> {
-        try {
-            return await this.menu.find();
-        } catch (error) {
-            console.error(error);
-            throw error;
-        }
+        return this.menu.find({ path: null });
     }
 }

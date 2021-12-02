@@ -1,5 +1,5 @@
-import { Context } from "aws-lambda";
 import { Model } from "mongoose";
+import { MenuDocument } from "../model";
 import { CreateMenuDTO } from "../model/dto/createMenuDTO";
 import { MenuService } from "../service/menu";
 import { MessageUtil } from "../utils/message";
@@ -14,12 +14,17 @@ export class MenuController extends MenuService {
         const params: CreateMenuDTO = JSON.parse(event.body);
 
         try {
+            let menuFound: MenuDocument;
             if (params.relatedId) {
-                const idExists = await this.findById(params.relatedId);
-                if (!idExists) return MessageUtil.error(403, 'parentId not exist');
+                menuFound = await this.findById(params.relatedId);
+                if (!menuFound) return MessageUtil.error(403, 'parentId not exist');
             }
 
-            const newMenu: any = await this.createMenu({ name: params.name, relatedId: params.relatedId });
+            const newMenu: any = await this.createMenu({
+                name: params.name,
+                parentId: menuFound?._id,
+                parentPath: menuFound?.path,
+            });
             return MessageUtil.created({ id: newMenu.id });
         } catch (error) {
             console.error(error);
@@ -31,9 +36,9 @@ export class MenuController extends MenuService {
         const id: number = event.pathParameters.id;
 
         try {
-            const idExists = await this.findById(id);
-            if (!idExists) return MessageUtil.error(404, 'id not found');
-            const deletedMenu = await this.deleteMenu(id);
+            const menuFound: any = await this.findById(id);
+            if (!menuFound) return MessageUtil.error(404, 'id not found');
+            const deletedMenu = await this.deleteMenu(menuFound._id);
             return MessageUtil.success(deletedMenu);
         } catch (error) {
             console.error(error);
